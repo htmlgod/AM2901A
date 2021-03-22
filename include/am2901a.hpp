@@ -1,56 +1,87 @@
 #pragma once
 #include <cstdint>
 
-struct AM2901A {
+namespace AM2901A {
 	using DWORD = uint32_t;
 	using BYTE = uint8_t;
-	using REGISTER = uint64_t;
-	
-	BYTE A : 4; // A address RO
-	BYTE B : 4; // B address R/W
-	BYTE D : 4; // D data bus
-	BYTE Q : 4; // Q register
-	BYTE Y : 4; // Y data out
-	
-	struct Register {
-		REGISTER R0 : 4;
-		REGISTER R1 : 4;
-		REGISTER R2 : 4;
-		REGISTER R3 : 4;
-		REGISTER R4 : 4;
-		REGISTER R5 : 4;
-		REGISTER R6 : 4;
-		REGISTER R7 : 4;
-		REGISTER R8 : 4;
-		REGISTER R9 : 4;
-		REGISTER R10 : 4;
-		REGISTER R11 : 4;
-		REGISTER R12 : 4;
-		REGISTER R13 : 4;
-		REGISTER R14 : 4;
-		REGISTER R15 : 4;
-	} Register;
+
+	struct CPU;
+	struct OUT;
+	struct BUS;
+	struct Flags;
+}
+
+struct AM2901A::BUS {
+	BYTE D : 4;
+	BYTE B : 4;
+	BYTE A : 4;
+	BYTE I53 : 3;
+	BYTE CO : 1;
+	BYTE I20 : 3;
+	BYTE M0 : 1;
+	BYTE I86 : 3;
+	BYTE M1 : 1;
+	BYTE CA : 4; // unused
+	BYTE AR : 4; // unused 
+};
+struct AM2901A::OUT {
+	BYTE Y : 4;
+	BYTE C4 : 1;
+	BYTE F3 : 1;
+	BYTE OVR : 1;
+	BYTE Z : 1;
+};
+struct AM2901A::Flags {
 	BYTE C4 : 1; // flag
 	BYTE F3 : 1; // flag
 	BYTE Z  : 1; // flag
 	BYTE OVR : 1; // flag
 	BYTE G : 1; // flag
 	BYTE P : 1; // flag
-	
-	struct COMMAND { 
-		DWORD AR : 4;
-		DWORD CA : 4;
-		DWORD M1 : 1;
-		DWORD I68 : 3;
-		DWORD M0 : 1;
-		DWORD I02 : 3;
-		DWORD C0 : 1;
-		DWORD I35 : 3;
-		DWORD A : 4;
-		DWORD B : 4;
-		DWORD D : 4;
-	};
+};
 
-	void Initialise();
-	void Reset(); 
+struct AM2901A::CPU {
+	
+	BYTE Q : 4; // Q register
+	BYTE Register[16];
+
+	void Initialise() {
+		Reset();
+	}
+	void Reset() {
+		BYTE addr = 0b00000000;
+		while (addr != 15) {
+			Register[addr++] = 0;
+		}
+	}
+	void Execute(BUS* bus, OUT* out);
+
+	static constexpr BYTE 
+		// alu sources octal codes
+		AQ = 00,
+		AB = 01,
+		ZQ = 02,
+		ZB = 03,
+		ZA = 04,
+		DA = 05,
+		DQ = 06,
+		DZ = 07,
+		// alu function octal codes
+		ADD = 00,
+		SUBR = 01,
+		SUBS = 02,
+		OR = 03,
+		AND = 04,
+		NOTRS = 05,
+		EXOR = 06,
+		EXNOR = 07,
+		// alu destination octal codes
+		QREG = 00,
+		NOP = 01,
+		RAMA = 02,
+		RAMF = 03,
+		RAMQD = 04,
+		RAMD = 05,
+		RAMQU = 06,
+		RAMU = 07;
 };
