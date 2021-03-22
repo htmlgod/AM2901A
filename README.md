@@ -1,2 +1,2 @@
-# am2901a
-AMD AM2901A emulator
+# AM2901A
+AMD AM2901A CPU emulator
