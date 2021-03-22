@@ -51,5 +51,6 @@ struct AM2901A {
 		DWORD D : 4;
 	};
 
-
+	void Initialise();
+	void Reset(); 
 };
