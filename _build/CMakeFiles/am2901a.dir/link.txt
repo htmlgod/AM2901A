@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libam2901a.a CMakeFiles/am2901a.dir/sources/am2901a.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libam2901a.a
