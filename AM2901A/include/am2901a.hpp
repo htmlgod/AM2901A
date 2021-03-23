@@ -7,7 +7,7 @@ using BYTE = uint8_t;
 namespace AM2901A {
     struct PINS;
 	enum FLAGS;
-    class CPU;
+    struct CPU;
 }
 
 // struct that response for AM2901A pins state (contains either data in and data out)

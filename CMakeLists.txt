@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 project(am2901a)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED False)
+
+option(BUILD_TESTS "Build tests" ON)
 
 add_library(am2901a ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/sources/am2901a.cpp ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/include/am2901a.hpp)
 target_include_directories(am2901a PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/include)
@@ -13,3 +15,12 @@ add_executable(am2901a_asm ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/am290
 target_include_directories(am2901a_asm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/include)
 
 target_link_libraries(am2901a_asm am2901a)
+
+if(BUILD_TESTS)
+	enable_testing()
+	add_subdirectory(third-party/gtest)
+	add_executable(cpu tests/test_cpu.cpp)
+	target_link_libraries(cpu am2901a gtest_main)
+	add_test(NAME cpu_test COMMAND cpu)
+endif()
+
