@@ -26,8 +26,8 @@ bool AM2901A_ASM::AM2901A_ASM::parse(const std::string &fileName) {
     bool exec_status;
     if (file) {
         while (getline(file, line)) {
-
-            commands.push_back(parseCommand(line));
+            if (line.find('\"') != std::string::npos)
+                commands.push_back(parseCommand(line));
         }
     }
     else {
@@ -38,7 +38,16 @@ bool AM2901A_ASM::AM2901A_ASM::parse(const std::string &fileName) {
 
 AM2901A_ASM::COMMAND AM2901A_ASM::AM2901A_ASM::parseCommand(const std::string &line) {
     std::stringstream ss(line);
+    COMMAND cmd;
 
+    ss >> cmd.operation;
+    if (!valid_operations.contains(cmd.operation)) {
+        throw std::logic_error("invalid operation");
+    }
+    ss >> cmd.operands;
+    if (!valid_operands.contains(cmd.operands)) {
+        throw std::logic_error("invalid operands");
+    }
     return COMMAND();
 }
 

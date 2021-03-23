@@ -2,6 +2,7 @@
 #include <exception>
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -19,7 +20,7 @@ struct AM2901A_ASM::COMMAND {
     std::string A;
     std::string B;
     std::string D;
-    std::string output;
+    std::string destination;
 };
 
 struct AM2901A_ASM::AM2901A_ASM {
@@ -28,6 +29,37 @@ struct AM2901A_ASM::AM2901A_ASM {
 
     std::vector<COMMAND> commands;
     std::vector<AM2901A::PINS> bus;
+
+    std::set<std::string> valid_operations = {
+        "ADD",
+        "SUBR",
+        "SUBS",
+        "OR",
+        "AND",
+        "NOTRS",
+        "EXOR",
+        "EXNOR"
+    };
+    std::set<std::string> valid_operands = {
+        "AQ",
+        "AB",
+        "ZQ",
+        "ZB",
+        "ZA",
+        "DA",
+        "DQ",
+        "DZ"
+    };
+    std::set<std::string> valid_destination = {
+        "QREG",
+        "NOP",
+        "RAMA",
+        "RAMF",
+        "RAMQD",
+        "RAMD",
+        "RAMQU",
+        "RAMU"
+    };
 
     AM2901A_ASM();
 
@@ -40,6 +72,7 @@ struct AM2901A_ASM::AM2901A_ASM {
     void run();
 
     void printRegisters();
+
 
 };
 
