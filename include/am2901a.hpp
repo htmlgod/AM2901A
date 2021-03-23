@@ -44,17 +44,25 @@ struct AM2901A::CPU {
 	
 	BYTE Q : 4; // Q register
 	BYTE Register[16];
+    Flags State;
 
-	void Initialise() {
+	void Initialize() {
 		Reset();
+		State.C4 = 0b0;
+        State.F3 = 0b0;
+        State.Z = 0b0;
+        State.OVR = 0b0;
+        State.G = 0b0;
+        State.P = 0b0;
 	}
+
 	void Reset() {
 		BYTE addr = 0b00000000;
 		while (addr != 15) {
 			Register[addr++] = 0;
 		}
 	}
-	void Execute(BUS* bus, OUT* out);
+	void Execute(BUS& bus, OUT& out);
 
 	static constexpr BYTE 
 		// alu sources octal codes

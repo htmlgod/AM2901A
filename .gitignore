@@ -1,5 +1,7 @@
 # MACOS SHIT
 .DS_Store
+# CLION
+.idea/
 # CMake
 *build*/
 # Prerequisites
