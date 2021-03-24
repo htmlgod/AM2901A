@@ -34,88 +34,96 @@ void AM2901A::CPU::ComputeLogic(const BYTE &R, const BYTE &S) {
     LCT.G2 = R2 & S2;
     LCT.G3 = R3 & S3;
     LCT.C4 = LCT.G3 | (LCT.P3 & LCT.G2)
-                    | (LCT.P3 & LCT.P2 & LCT.G1)
-                    | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.G0)
-                    | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0 & Pins->C0);
+             | (LCT.P3 & LCT.P2 & LCT.G1)
+             | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.G0)
+             | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0 & Pins->C0);
     LCT.C3 = LCT.G2 | (LCT.P2 & LCT.G1)
-                    | (LCT.P2 & LCT.P1 & LCT.G0)
-                    | (LCT.P2 & LCT.P1 & LCT.P0 & Pins->C0);
+             | (LCT.P2 & LCT.P1 & LCT.G0)
+             | (LCT.P2 & LCT.P1 & LCT.P0 & Pins->C0);
 }
 
-void AM2901A::CPU::Execute(PINS* pins) {
+void AM2901A::CPU::Execute(PINS *pins) {
     constexpr BYTE ZERO = 0b0000;
 
     SetPINS(pins);
 
     RegA = Register[Pins->A];
     RegB = Register[Pins->B];
-	// SOURCE DECODER and SOURCE SELECT;
-	BYTE I20 = Pins->I20;
+    // SOURCE DECODER and SOURCE SELECT;
+    BYTE I20 = Pins->I20;
 
-	// 16-BIT STRUCT FOR FOUR 4-BIT WORDS (HALF WORDS = HWORD)
+    // 16-BIT STRUCT FOR FOUR 4-BIT WORDS (HALF WORDS = HWORD)
     struct _4BYTE {
-        BYTE R : 4;
-        BYTE S : 4;
-        BYTE FUNC : 4;
-        BYTE OUTPUT : 4;
+        BYTE R: 4;
+        BYTE S: 4;
+        BYTE FUNC: 4;
+        BYTE OUTPUT: 4;
     } HWORD{};
 
-	switch(I20) {
-		case AQ: {
+    switch (I20) {
+        case AQ: {
             HWORD.R = RegA;
             HWORD.S = Q;
-		} break;
-		case AB: {
+        }
+            break;
+        case AB: {
             HWORD.R = RegA;
             HWORD.S = RegB;
-		} break;
-		case ZQ: {
+        }
+            break;
+        case ZQ: {
             HWORD.R = 0;
             HWORD.S = Q;
-		} break;
-		case ZB: {
+        }
+            break;
+        case ZB: {
             HWORD.R = ZERO;
             HWORD.S = RegB;
-		} break;
-		case ZA: {
+        }
+            break;
+        case ZA: {
             HWORD.R = ZERO;
             HWORD.S = RegA;
-		} break;
-		case DA: {
+        }
+            break;
+        case DA: {
             HWORD.R = Pins->D;
             HWORD.S = RegA;
-		} break;
-		case DQ: {
+        }
+            break;
+        case DQ: {
             HWORD.R = Pins->D;
             HWORD.S = Q;
-		} break;
-		case DZ: {
+        }
+            break;
+        case DZ: {
             HWORD.R = Pins->D;
             HWORD.S = ZERO;
-		} break;
-		default:
-		    break;
-	}
+        }
+            break;
+        default:
+            break;
+    }
 
-	// ALU FUNCTIONS
-	// Arithmetical
-	constexpr BYTE _4BITMASK = 0b00001111;
-	auto Add = [this](BYTE R, BYTE S) -> BYTE {
+    // ALU FUNCTIONS
+    // Arithmetical
+    constexpr BYTE _4BITMASK = 0b00001111;
+    auto Add = [this](BYTE R, BYTE S) -> BYTE {
 
-		BYTE result = R + S + Pins->C0;
+        BYTE result = R + S + Pins->C0;
         result &= _4BITMASK;
 
         ComputeLogic(R, S);
-		Pins->P = ~(LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
-		Pins->G = ~(LCT.G3 | (LCT.P3 & LCT.G2)
-		                   | (LCT.P3 & LCT.P2 & LCT.G1)
-		                   | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.G0));
-		Pins->C4 = LCT.C4;
-		Pins->OVR = LCT.C3 ^ LCT.C4;
+        Pins->P = ~(LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
+        Pins->G = ~(LCT.G3 | (LCT.P3 & LCT.G2)
+                    | (LCT.P3 & LCT.P2 & LCT.G1)
+                    | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.G0));
+        Pins->C4 = LCT.C4;
+        Pins->OVR = LCT.C3 ^ LCT.C4;
 
-		return result;
-	};
-	auto Subr = [this](BYTE R, BYTE S) -> BYTE {
+        return result;
+    };
+    auto Subr = [this](BYTE R, BYTE S) -> BYTE {
         BYTE result = S - R - (~Pins->C0);
         result &= _4BITMASK;
 
@@ -127,9 +135,9 @@ void AM2901A::CPU::Execute(PINS* pins) {
         Pins->C4 = LCT.C4;
         Pins->OVR = LCT.C3 ^ LCT.C4;
 
-	    return result;
-	};
-	auto Subs = [this](BYTE R, BYTE S) -> BYTE {
+        return result;
+    };
+    auto Subs = [this](BYTE R, BYTE S) -> BYTE {
         BYTE result = R - S - (~Pins->C0);
         result &= _4BITMASK;
 
@@ -142,116 +150,128 @@ void AM2901A::CPU::Execute(PINS* pins) {
         Pins->OVR = LCT.C3 ^ LCT.C4;
 
         return result;
-	};
-	// Logical
-	auto Or = [this](BYTE R, BYTE S) -> BYTE {
+    };
+    // Logical
+    auto Or = [this](BYTE R, BYTE S) -> BYTE {
         ComputeLogic(R, S);
         Pins->P = 0;
         Pins->G = LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0;
         Pins->C4 = ~Pins->G | Pins->C0;
         Pins->OVR = Pins->C4;
-		return R | S;
-	};
-	auto And = [this](BYTE R, BYTE S) -> BYTE {
+        return R | S;
+    };
+    auto And = [this](BYTE R, BYTE S) -> BYTE {
         ComputeLogic(R, S);
         Pins->P = 0;
         Pins->G = ~(LCT.G3 | LCT.G2 | LCT.G1 | LCT.G0);
         Pins->C4 = ~Pins->G | Pins->C0;
         Pins->OVR = Pins->C4;
-		return R & S;
-	};
-	auto Notrs = [this](BYTE R, BYTE S) -> BYTE {
+        return R & S;
+    };
+    auto Notrs = [this](BYTE R, BYTE S) -> BYTE {
         ComputeLogic(~R, S);
         Pins->P = 0;
         Pins->G = ~(LCT.G3 | LCT.G2 | LCT.G1 | LCT.G0);
         Pins->C4 = ~Pins->G | Pins->C0;
         Pins->OVR = Pins->C4;
         return ~R & S & _4BITMASK;
-	};
-	auto Exor = [this](BYTE R, BYTE S) -> BYTE {
+    };
+    auto Exor = [this](BYTE R, BYTE S) -> BYTE {
         ComputeLogic(~R, S);
         Pins->P = LCT.G3 | LCT.G2 | LCT.G1 | LCT.G0;
         Pins->G = LCT.G3 | (LCT.P3 & LCT.G2)
-                         | (LCT.P3 & LCT.P2 & LCT.G1)
-                         | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
-        Pins->C4 = ~(LCT.G3 | (LCT.P3 & LCT.G2)
                   | (LCT.P3 & LCT.P2 & LCT.G1)
-                  | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0 & (LCT.G0 | ~Pins->C0)));
-        Pins->OVR = (~LCT.P2 | (~LCT.G2 & ~LCT.P1) | (~LCT.G2 & ~LCT.G1 & ~LCT.P0)
-                  | (~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)
-                  ^ (~LCT.P3 | (~LCT.G3 & ~LCT.P2) | (~LCT.G3 & ~LCT.G2 & ~LCT.P1)
-                  | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.P0)
-                  | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)));
-        return (R ^ S) & _4BITMASK;
-	};
-	auto Exnor = [this](BYTE R, BYTE S) -> BYTE {
-        ComputeLogic(R, S);
-        Pins->P = LCT.G3 | LCT.G2 | LCT.G1 | LCT.G0;
-        Pins->G = LCT.G3 | (LCT.P3 & LCT.G2)
-                         | (LCT.P3 & LCT.P2 & LCT.G1)
-                         | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
+                  | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
         Pins->C4 = ~(LCT.G3 | (LCT.P3 & LCT.G2)
                      | (LCT.P3 & LCT.P2 & LCT.G1)
                      | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0 & (LCT.G0 | ~Pins->C0)));
         Pins->OVR = (~LCT.P2 | (~LCT.G2 & ~LCT.P1) | (~LCT.G2 & ~LCT.G1 & ~LCT.P0)
-                  | (~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)
-                  ^ (~LCT.P3 | (~LCT.G3 & ~LCT.P2) | (~LCT.G3 & ~LCT.G2 & ~LCT.P1)
-                  | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.P0)
-                  | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)));
+                     | (~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)
+                       ^ (~LCT.P3 | (~LCT.G3 & ~LCT.P2) | (~LCT.G3 & ~LCT.G2 & ~LCT.P1)
+                          | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.P0)
+                          | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)));
+        return (R ^ S) & _4BITMASK;
+    };
+    auto Exnor = [this](BYTE R, BYTE S) -> BYTE {
+        ComputeLogic(R, S);
+        Pins->P = LCT.G3 | LCT.G2 | LCT.G1 | LCT.G0;
+        Pins->G = LCT.G3 | (LCT.P3 & LCT.G2)
+                  | (LCT.P3 & LCT.P2 & LCT.G1)
+                  | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0);
+        Pins->C4 = ~(LCT.G3 | (LCT.P3 & LCT.G2)
+                     | (LCT.P3 & LCT.P2 & LCT.G1)
+                     | (LCT.P3 & LCT.P2 & LCT.P1 & LCT.P0 & (LCT.G0 | ~Pins->C0)));
+        Pins->OVR = (~LCT.P2 | (~LCT.G2 & ~LCT.P1) | (~LCT.G2 & ~LCT.G1 & ~LCT.P0)
+                     | (~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)
+                       ^ (~LCT.P3 | (~LCT.G3 & ~LCT.P2) | (~LCT.G3 & ~LCT.G2 & ~LCT.P1)
+                          | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.P0)
+                          | (~LCT.G3 & ~LCT.G2 & ~LCT.G1 & ~LCT.G0 & Pins->C0)));
 
         return ~(R ^ S) & _4BITMASK;
-	};
+    };
 
-	// ALU FUNCTION DECODER AND PERFORM ALU OPERATION
-	BYTE I53 = Pins->I53;
-	switch(I53) {
-		case ADD: {
+    // ALU FUNCTION DECODER AND PERFORM ALU OPERATION
+    BYTE I53 = Pins->I53;
+    switch (I53) {
+        case ADD: {
             HWORD.FUNC = Add(HWORD.R, HWORD.S);
-		}   break;
-		case SUBR: {
+        }
+            break;
+        case SUBR: {
             HWORD.FUNC = Subr(HWORD.R, HWORD.S);
-		}   break;
-		case SUBS: {
+        }
+            break;
+        case SUBS: {
             HWORD.FUNC = Subs(HWORD.R, HWORD.S);
-		}   break;
-		case OR: {
+        }
+            break;
+        case OR: {
             HWORD.FUNC = Or(HWORD.R, HWORD.S);
-		}   break;
-		case AND: {
+        }
+            break;
+        case AND: {
             HWORD.FUNC = And(HWORD.R, HWORD.S);
-		}   break;
-		case NOTRS: {
+        }
+            break;
+        case NOTRS: {
             HWORD.FUNC = Notrs(HWORD.R, HWORD.S);
-		}   break;
-		case EXOR: {
+        }
+            break;
+        case EXOR: {
             HWORD.FUNC = Exor(HWORD.R, HWORD.S);
-		}   break;
-		case EXNOR: {
+        }
+            break;
+        case EXNOR: {
             HWORD.FUNC = Exnor(HWORD.R, HWORD.S);
-		}   break;
-		default:
-		    break;
-	}
+        }
+            break;
+        default:
+            break;
+    }
 
-	// ALU DESTINATION CONTROL
-	// REGISTER SHIFT
+    // ALU DESTINATION CONTROL
+    // REGISTER SHIFT
 
     BYTE I86 = Pins->I86;
-    switch(I86) {
+    switch (I86) {
         case QREG: {
-			Q = HWORD.FUNC;
+            Q = HWORD.FUNC;
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case NOP: {
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case RAMA: {
             Register[Pins->B] = HWORD.FUNC;
             Pins->Y = Pins->A;
-        }   break;
+        }
+            break;
         case RAMF: {
             Register[Pins->B] = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case RAMQD: {
             Pins->RAM0 = HWORD.FUNC & 0b0001;
             Pins->RAM3 = 0; // SHOULD BE OUT Pins->RAM3 = Input Pins->RAM3, but we have single cpu
@@ -262,7 +282,8 @@ void AM2901A::CPU::Execute(PINS* pins) {
             Q = Q >> 1;
 
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case RAMD: {
             Pins->RAM0 = HWORD.FUNC & 0b0001;
             Pins->RAM3 = 0;
@@ -271,7 +292,8 @@ void AM2901A::CPU::Execute(PINS* pins) {
             Register[Pins->B] = HWORD.FUNC >> 1;
 
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case RAMQU: {
             Pins->RAM0 = 0;
             Pins->RAM3 = HWORD.FUNC & 0b1000;
@@ -282,7 +304,8 @@ void AM2901A::CPU::Execute(PINS* pins) {
             Q = Q << 1;
 
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         case RAMU: {
             Pins->RAM0 = 0;
             Pins->RAM3 = HWORD.FUNC & 0b1000;
@@ -291,7 +314,8 @@ void AM2901A::CPU::Execute(PINS* pins) {
             Register[Pins->B] = HWORD.FUNC << 1;
 
             Pins->Y = HWORD.FUNC;
-        }   break;
+        }
+            break;
         default:
             break;
     }
