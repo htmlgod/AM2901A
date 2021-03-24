@@ -5,22 +5,37 @@ project(am2901a)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED False)
 
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "Build tests" OFF)
 
 add_library(am2901a ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/sources/am2901a.cpp ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/include/am2901a.hpp)
 target_include_directories(am2901a PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/include)
 target_include_directories(am2901a PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A/sources)
 
-add_executable(am2901a_asm ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/am2901a_asm.cpp)
+add_library(am2901a_asm ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/am2901a_asm.cpp)
 target_include_directories(am2901a_asm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/include)
+target_include_directories(am2901a_asm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources)
 
 target_link_libraries(am2901a_asm am2901a)
+
+
+add_executable(compiler ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/compiler.cpp)
+target_link_libraries(compiler am2901a_asm)
 
 if(BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(third-party/gtest)
-	add_executable(cpu tests/test_cpu.cpp)
-	target_link_libraries(cpu am2901a gtest_main)
-	add_test(NAME cpu_test COMMAND cpu)
+
+	add_executable(cpu_test tests/test_cpu.cpp)
+
+	add_executable(parser_test tests/test_parser.cpp)
+
+
+	target_link_libraries(parser_test am2901a_asm gtest_main)
+
+	target_link_libraries(cpu_test am2901a gtest_main)
+
+	add_test(NAME cpu_test COMMAND cpu_test)
+
+	add_test(NAME parser_test COMMAND parser_test)
 endif()
 

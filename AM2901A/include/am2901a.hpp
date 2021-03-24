@@ -6,7 +6,16 @@ using BYTE = uint8_t;
 
 namespace AM2901A {
     struct PINS;
-	enum FLAGS;
+	enum FLAGS {
+		C4  = (1 << 0),
+		F3  = (1 << 1),
+		Z   = (1 << 2),
+		OVR = (1 << 3),
+		G [[maybe_unused]] = (1 << 4),
+		P [[maybe_unused]] = (1 << 5),
+		U1 [[maybe_unused]] = (1 << 6), // unused
+		U2 [[maybe_unused]] = (1 << 7), // unused
+	};
     struct CPU;
 }
 
@@ -36,16 +45,6 @@ struct AM2901A::PINS {
     BYTE OE   : 1;    // Output enable (when 1 = output disabled)
 };
 
-enum AM2901A::FLAGS {
-	C4  = (1 << 0),
-	F3  = (1 << 1),
-	Z   = (1 << 2),
-	OVR = (1 << 3),
-	G [[maybe_unused]] = (1 << 4),
-	P [[maybe_unused]] = (1 << 5),
-	U1 [[maybe_unused]] = (1 << 6), // unused
-	U2 [[maybe_unused]] = (1 << 7), // unused
-};
 
 struct AM2901A::CPU {
 	BYTE Q : 4;         // Q register
@@ -83,12 +82,12 @@ struct AM2901A::CPU {
 		EXOR = 06,
 		EXNOR = 07,
 		// alu destination octal codes
-		QREG = 00,
-		NOP = 01,
-		RAMA = 02,
-		RAMF = 03,
+		QREG  = 00,
+		NOP   = 01,
+		RAMA  = 02,
+		RAMF  = 03,
 		RAMQD = 04,
-		RAMD = 05,
+		RAMD  = 05,
 		RAMQU = 06,
-		RAMU = 07;
+		RAMU  = 07;
 };
