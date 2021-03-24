@@ -17,7 +17,6 @@ target_include_directories(am2901a_asm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/AM290
 
 target_link_libraries(am2901a_asm am2901a)
 
-
 add_executable(compiler ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/compiler.cpp)
 target_link_libraries(compiler am2901a_asm)
 
@@ -25,17 +24,15 @@ if(BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(third-party/gtest)
 
-	add_executable(cpu_test tests/test_cpu.cpp)
+	add_executable(cpu_test tests/am2901a/test_cpu.cpp)
 
-	add_executable(parser_test tests/test_parser.cpp)
+	add_executable(asm_test tests/am2901a_asm/test_parser.cpp)
 
 
-	target_link_libraries(parser_test am2901a_asm gtest_main)
-
+	target_link_libraries(asm_test am2901a_asm gtest_main)
 	target_link_libraries(cpu_test am2901a gtest_main)
 
 	add_test(NAME cpu_test COMMAND cpu_test)
-
-	add_test(NAME parser_test COMMAND parser_test)
+	add_test(NAME asm_test COMMAND asm_test)
 endif()
 

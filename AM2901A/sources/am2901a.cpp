@@ -1,10 +1,11 @@
 #include <am2901a.hpp>
 
 void AM2901A::CPU::Reset() {
-    BYTE addr = 0b00000000;
-    while (addr != 15) {
+    BYTE addr = 0b0000;
+    while (addr != 0b1111) {
         Register[addr++] = 0;
     }
+    SetPINS(nullptr);
 }
 
 void AM2901A::CPU::Initialize() {
