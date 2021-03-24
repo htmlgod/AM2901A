@@ -266,11 +266,12 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
         case RAMA: {
             Register[Pins->B] = HWORD.FUNC;
-            Pins->Y = Pins->A;
+            Pins->Y = Register[Pins->A];
         }
             break;
         case RAMF: {
             Register[Pins->B] = HWORD.FUNC;
+            Pins->Y = Pins->A;
         }
             break;
         case RAMQD: {
@@ -321,10 +322,8 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
     }
 
-    Pins->Y = Pins->OE ? Pins->Y : ZERO;
+    // Pins->Y = Pins->OE ? Pins->Y : ZERO;
 
     Pins->F3 = HWORD.FUNC & 0b1000;
     Pins->Z = (HWORD.FUNC == 0);
 }
-
-
