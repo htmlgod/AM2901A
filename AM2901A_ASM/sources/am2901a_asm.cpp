@@ -65,7 +65,7 @@ AM2901A::PINS AM2901A_ASM::AM2901A_ASM::setPINS(const COMMAND& cmd) {
     return AM2901A::PINS();
 }
 void AM2901A_ASM::AM2901A_ASM::executeCommand(AM2901A::PINS& p) {
-    cpu.Execute(pins);
+    cpu.Execute(&pins);
 }
 
 void AM2901A_ASM::AM2901A_ASM::compile() {

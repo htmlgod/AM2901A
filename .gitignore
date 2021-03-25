@@ -2,6 +2,8 @@
 .DS_Store
 # CLION
 .idea/
+# vs
+.vs/
 # CMake
 *build*/
 # Prerequisites
