@@ -14,18 +14,18 @@ namespace AM2901A {
 // struct that response for AM2901A pins state (contains either data in and data out)
 struct AM2901A::PINS {
     BYTE A: 4;                     // A3...A0 address input
-    BYTE I86: 3;                   // I6 I8 I7 instructions input
+    BYTE I86: 3;                   // I6 I8 I7 ALU output data selector input
     [[maybe_unused]] BYTE RAM3: 1; // MSB after RAM shift << | i/o
     [[maybe_unused]] BYTE RAM0: 1; // LSB after RAM shift >> | i/o
     [[maybe_unused]] BYTE VCC: 1;  // Power Line (Always 1)
     BYTE Z: 1;                     // F == 0 flag
-    BYTE I20: 3;                   // I0 I1 I2 instructions input
+    BYTE I20: 3;                   // I0 I1 I2 ALU data source selector input
     [[maybe_unused]] BYTE CP: 1;   // Clock input (can be always 1 because lathes after RAM prevents from data lose
     [[maybe_unused]] BYTE Q3: 1;   // MSB after RegQ register shift << | i/o
     BYTE B: 4;                     // B0...B3 address input
-    [[maybe_unused]] BYTE Q0: 1;                    // LSB after RegQ register shift >> | i/o
+    [[maybe_unused]] BYTE Q0: 1;   // LSB after RegQ register shift >> | i/o
     BYTE D: 4;                     // D3...D0 data input
-    BYTE I53: 3;                   // I3 I5 I4 instructions input
+    BYTE I53: 3;                   // I3 I5 I4 ALU function input
     BYTE C0: 1;                    // Carry-in to ALU
     [[maybe_unused]] BYTE GND: 1;  // Ground line (always 1?)
     BYTE F3: 3;                    // MSB of ALU output (F) or sign

@@ -5,6 +5,9 @@ void AM2901A::CPU::Reset() {
     while (addr != 0b1111) {
         RAM[addr++] = 0;
     }
+    RegA = 0b0;
+    RegB = 0b0;
+    RegQ = 0b0;
     SetPINS(nullptr);
 }
 
@@ -15,7 +18,6 @@ void AM2901A::CPU::Initialize() {
 void AM2901A::CPU::SetPINS(AM2901A::PINS *pins) {
     this->Pins = pins;
 }
-
 
 void AM2901A::CPU::ComputeLogic(const BYTE &R, const BYTE &S) {
     auto R0 = R & 0b0001;
@@ -47,12 +49,11 @@ void AM2901A::CPU::Execute(PINS *pins) {
     constexpr BYTE ZERO = 0b0000;
 
     SetPINS(pins);
-
     RegA = RAM[Pins->A];
     RegB = RAM[Pins->B];
+
     // SOURCE DECODER and SOURCE SELECT;
     BYTE I20 = Pins->I20;
-
     // 16-BIT STRUCT FOR FOUR 4-BIT WORDS (HALF WORDS = HWORD)
     struct _4BYTE {
         BYTE R: 4;

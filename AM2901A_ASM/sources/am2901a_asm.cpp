@@ -1,7 +1,17 @@
 #include <am2901a_asm.hpp>
 
-AM2901A_ASM::AM2901A_ASM::AM2901A_ASM() : lineNumber(0), commandNumber(0) {
+AM2901A_ASM::AM2901A_ASM::AM2901A_ASM() : lineNumber(0) {
     cpu.Initialize();
+}
+
+void AM2901A_ASM::AM2901A_ASM::resetCPU() {
+    cpu.Reset();
+}
+
+void AM2901A_ASM::AM2901A_ASM::printRegisters() {
+    for (size_t i = 0; i < 16; i++) {
+        std::cout << "R" << i << " = " << std::bitset<4> (cpu.RAM[i]) << std::endl;
+    }
 }
 
 void AM2901A_ASM::AM2901A_ASM::preproccessLine(std::string &line) const {
@@ -43,15 +53,22 @@ bool AM2901A_ASM::AM2901A_ASM::isCommentary(const std::string &line) {
     return (line.find('#') != std::string::npos) and (line.find('#') == 0);
 }
 
-bool AM2901A_ASM::AM2901A_ASM::isInternalCommand(const std::string &line) {
+bool AM2901A_ASM::AM2901A_ASM::isPrintRegisterCommand(const std::string &line) {
     return line.find("REGS") != std::string::npos;
+}
+
+bool AM2901A_ASM::AM2901A_ASM::isResetCommand(const std::string &line) {
+    return line.find("RESET") != std::string::npos;
 }
 
 AM2901A_ASM::COMMAND AM2901A_ASM::AM2901A_ASM::parseCommand(std::string &line) {
     COMMAND cmd;
 
-    if (isInternalCommand(line)) {
+    if (isPrintRegisterCommand(line)) {
         return {"REGS"};
+    }
+    else if (isResetCommand(line)) {
+        return {"RESET"};
     }
 
     preproccessLine(line);
@@ -108,8 +125,6 @@ AM2901A_ASM::COMMAND AM2901A_ASM::AM2901A_ASM::parseCommand(std::string &line) {
     cmd.D = D & 0b1111;
     cmd.C0 = C0 & 0b1;
 
-    commandNumber++;
-
     return cmd;
 }
 
@@ -121,7 +136,7 @@ void AM2901A_ASM::AM2901A_ASM::parse(const std::string &fileName) {
         while (getline(file, line)) {
             lineNumber++;
             if (!isCommentary(line) and !line.empty()) {
-                commands.push_back(parseCommand(line));
+                dataBUS.push_back(parseCommand(line));
             }
         }
     }
@@ -130,87 +145,53 @@ void AM2901A_ASM::AM2901A_ASM::parse(const std::string &fileName) {
     }
 }
 
-AM2901A::PINS AM2901A_ASM::AM2901A_ASM::setPINS(const COMMAND& cmd) {
-    return {
-            cmd.A,
-            destination_octal_codes.at(cmd.destination),
-            0,
-            0,
-            1,
-            0,
-            operands_octal_codes.at(cmd.operands),
-            1,
-            0,
-            cmd.B,
-            0,
-            cmd.D,
-            operation_octal_codes.at(cmd.operation),
-            cmd.C0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-    };
+void AM2901A_ASM::AM2901A_ASM::setPINS(const COMMAND& cmd) {
+    pins.A = cmd.A;
+    pins.I86 = destination_octal_codes.at(cmd.destination);
+    pins.I20 = operands_octal_codes.at(cmd.operands);
+    pins.B = cmd.B;
+    pins.D = cmd.D;
+    pins.I53 = operation_octal_codes.at(cmd.operation);
+    pins.C0 = cmd.C0;
+    pins.OE = 1;
 }
 
-void AM2901A_ASM::AM2901A_ASM::compile() {
-    for (const auto& cmd : commands) {
-        if (cmd.operation != "REGS") {
-            bus.push_back(setPINS(cmd));
-        }
-        else {
-            bus.push_back({});
-            internalCommandsQ.push(commandNumber);
-        }
-    }
-}
 
-void AM2901A_ASM::AM2901A_ASM::executeCommand(AM2901A::PINS& p) {
-    cpu.Execute(&p);
-    std::cout << "Y = " << std::bitset<4>(p.Y) << ", FLAGS (OVR, C4, F3, Z, ~P, ~G) = " <<
-                  std::bitset<1>(p.OVR) << ", " << std::bitset<1>(p.C4) << ", " << std::bitset<1>(p.F3) << ", " <<
-                  std::bitset<1>(p.Z) << ", " << std::bitset<1>(p.P) << ", " << std::bitset<1>(p.G) << std::endl;
-}
-
-void AM2901A_ASM::AM2901A_ASM::printRegisters() {
-    for (size_t i = 0; i < 16; i++) {
-        std::cout << "R" << i << " = " << std::bitset<4> (cpu.RAM[i]) << std::endl;
-    }
+void AM2901A_ASM::AM2901A_ASM::executeCommand() {
+    cpu.Execute(&pins);
+    std::cout << "Y = " << std::bitset<4>(pins.Y) << ", FLAGS (OVR, C4, F3, Z, ~P, ~G) = " <<
+    std::bitset<1>(pins.OVR) << ", " << std::bitset<1>(pins.C4) << ", " << std::bitset<1>(pins.F3) << ", " <<
+    std::bitset<1>(pins.Z) << ", " << std::bitset<1>(pins.P) << ", " << std::bitset<1>(pins.G) << std::endl;
 }
 
 // compiler mode
-void AM2901A_ASM::AM2901A_ASM::run(const std::string& file) {
-    parse(file);
-    compile();
-    for (size_t i = 0; i < std::size(bus); i++) {
-        if (!internalCommandsQ.empty()) {
-            if (i == internalCommandsQ.front()) {
-                printRegisters();
-                internalCommandsQ.pop();
-            }
-            else {
-                executeCommand(bus[i]);
-            }
+void AM2901A_ASM::AM2901A_ASM::compile(const std::string &fileName) {
+    parse(fileName);
+    for (const auto& cmd : dataBUS) {
+        if (cmd.operation != "REGS" and cmd.operation != "RESET") {
+            setPINS(cmd);
+            executeCommand();
         }
         else {
-            executeCommand(bus[i]);
+            if (cmd.operation == "REGS")
+                printRegisters();
+            else
+                resetCPU();
         }
     }
-
 }
 
 // interpreter mode
 void AM2901A_ASM::AM2901A_ASM::interpret(std::string &cmd) {
     auto command = parseCommand(cmd);
-    if (command.operation == "REGS") {
-        printRegisters();
+    if (command.operation != "REGS" and command.operation != "RESET") {
+        setPINS(command);
+        executeCommand();
     }
     else {
-        auto pins = setPINS(command);
-        executeCommand(pins);
+        if (command.operation == "REGS")
+            printRegisters();
+        else
+            resetCPU();
     }
 }

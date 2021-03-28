@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     else if (2 == argc){
         std::cout << "Compiling " << argv[1] << "..." << std::endl;
         try {
-            ASM.run(argv[1]);
+            ASM.compile(argv[1]);
         }
         catch (std::exception& ex) {
             std::cout << "Error, " << ex.what() << std::endl;

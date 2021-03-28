@@ -30,32 +30,31 @@ struct AM2901A_ASM::COMMAND {
 
 struct AM2901A_ASM::AM2901A_ASM {
     AM2901A::CPU cpu {};
+    AM2901A::PINS pins {};
 
-    std::vector<COMMAND> commands;
-    std::vector<AM2901A::PINS> bus;
-
-    size_t lineNumber{};
-    size_t commandNumber{};
+    std::vector<COMMAND> dataBUS;
 
     AM2901A_ASM();
 
+    size_t lineNumber{};
+
     void preproccessLine(std::string& line) const;
     static bool isCommentary(const std::string& line);
-
-    std::queue<size_t> internalCommandsQ;
-    static bool isInternalCommand(const std::string& line);
+    static bool isPrintRegisterCommand(const std::string& line);
+    static bool isResetCommand(const std::string& line);
 
     [[nodiscard]] COMMAND parseCommand(std::string& line);
     void parse(const std::string& fileName);
 
-    AM2901A::PINS setPINS(const COMMAND& cmd);
-    void compile();
+    void setPINS(const COMMAND& cmd);
+    // void readPINS();
 
-    void executeCommand(AM2901A::PINS& p);
+    void executeCommand();
 
-    void run(const std::string& fileName);
+    void compile(const std::string &fileName);
     void interpret(std::string& cmd);
 
+    void resetCPU();
     void printRegisters();
     std::set<std::string> valid_operations = {
         "ADD",

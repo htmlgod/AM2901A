@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(am2901a)
 
@@ -17,8 +17,8 @@ target_include_directories(am2901a_asm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/AM290
 
 target_link_libraries(am2901a_asm am2901a)
 
-add_executable(compiler ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/compiler.cpp)
-target_link_libraries(compiler am2901a_asm)
+add_executable(asm_am2901a ${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM/sources/executable.cpp)
+target_link_libraries(asm_am2901a am2901a_asm)
 
 if(BUILD_TESTS)
 	enable_testing()
