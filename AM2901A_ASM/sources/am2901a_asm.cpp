@@ -1,5 +1,9 @@
 #include <am2901a_asm.hpp>
 
+std::string AM2901A_ASM::generateError(const std::string& what, size_t line) {
+	return (what + " in line " + std::to_string(line));
+}
+
 AM2901A_ASM::AM2901A_ASM::AM2901A_ASM() : lineNumber(0) {
     cpu.Initialize();
 }
@@ -9,8 +13,12 @@ void AM2901A_ASM::AM2901A_ASM::resetCPU() {
 }
 
 void AM2901A_ASM::AM2901A_ASM::printRegisters() {
-    for (size_t i = 0; i < 16; i++) {
-        std::cout << "R" << i << " = " << std::bitset<4> (cpu.RAM[i]) << std::endl;
+    std::cout << "Q = " << std::bitset<4> (cpu.RegQ) << std::endl;
+    for (size_t i = 0; i < 15; i+=2 ) {
+        std::cout << "R" << std::setw(2) << std::left << i << " = "
+            << std::bitset<4> (cpu.RAM[i])  << "  |  ";
+        std::cout << "R" << std::setw(2) << std::left << i + 1 << std::setw(4) << " = "
+            << std::bitset<4> (cpu.RAM[i + 1]) << std::endl;
     }
 }
 
@@ -24,28 +32,28 @@ void AM2901A_ASM::AM2901A_ASM::preproccessLine(std::string &line) const {
         commaCount++;
     }
     if (commaCount != 3) {
-        throw std::logic_error("Invalid syntax (wrong A,B,D,C0 syntax) in line " + std::to_string(lineNumber));
+        throw std::logic_error(generateError("Invalid syntax (wrong A,B,D,C0 syntax)", lineNumber));
     }
 
     if (line.find('(') != std::string::npos) {
         line.replace(line.find('('),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing '(') in line " + std::to_string(lineNumber));
+        throw std::logic_error(generateError("Invalid syntax (Missing '(')", lineNumber));
     }
 
     if (line.find(')') != std::string::npos) {
         line.replace(line.find(')'),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing ')') in line " + std::to_string(lineNumber));
+        throw std::logic_error(generateError("Invalid syntax (Missing ')')", lineNumber));
     }
 
     if (line.find('=') != std::string::npos) {
         line.replace(line.find('='),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing '=') in line " + std::to_string(lineNumber));
+        throw std::logic_error(generateError("Invalid syntax (Missing '=')", lineNumber));
     }
 }
 

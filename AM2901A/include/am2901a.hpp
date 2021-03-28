@@ -1,9 +1,7 @@
 #pragma once
 #include <cstdint>
 
-using DWORD = uint32_t;
 using BYTE = uint8_t;
-using WORD = uint16_t;
 
 namespace AM2901A {
     struct PINS;

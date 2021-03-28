@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <bitset>
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -16,6 +17,7 @@
 namespace AM2901A_ASM {
     struct COMMAND;
     struct AM2901A_ASM;
+	std::string generateError(const std::string& what, size_t line);
 }
 
 struct AM2901A_ASM::COMMAND {
@@ -47,8 +49,6 @@ struct AM2901A_ASM::AM2901A_ASM {
     void parse(const std::string& fileName);
 
     void setPINS(const COMMAND& cmd);
-    // void readPINS();
-
     void executeCommand();
 
     void compile(const std::string &fileName);

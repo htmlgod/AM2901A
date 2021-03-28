@@ -160,7 +160,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
         case RAMA: {
             RAM[Pins->B] = HWORD.FUNC;
-            Pins->Y = RAM[Pins->A];
+			Pins->Y = RegA;
         }
             break;
         case RAMF: {
@@ -236,7 +236,7 @@ BYTE AM2901A::CPU::Add(BYTE R, BYTE S) {
 }
 
 BYTE AM2901A::CPU::Subr(BYTE R, BYTE S) {
-    BYTE result = S - R - (~Pins->C0);
+    BYTE result = S - R - Pins->C0;
     result &= _4BITMASK;
 
     ComputeLogic(~R, S);
@@ -251,7 +251,7 @@ BYTE AM2901A::CPU::Subr(BYTE R, BYTE S) {
 }
 
 BYTE AM2901A::CPU::Subs(BYTE R, BYTE S) {
-    BYTE result = R - S - (~Pins->C0);
+    BYTE result = R - S - Pins->C0;
     result &= _4BITMASK;
 
     ComputeLogic(R, ~S);
