@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
-project(am2901a VERSION 1.0)
+project(am2901a VERSION 0.0.1.0)
 
 enable_testing()
 

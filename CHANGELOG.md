@@ -1,3 +1,4 @@
+2021-03-29 dev: added cpack config; project: release
 2021-03-29 bug fixes, small refactoring, cmake project reorganization
 2021-03-28 Update README.md
 2021-03-28 almost done
