@@ -3,7 +3,7 @@
 void AM2901A::CPU::Reset() {
     BYTE addr = 0b0000;
     while (addr != 0b1111) {
-        Register[addr++] = 0;
+        RAM[addr++] = 0;
     }
     SetPINS(nullptr);
 }
@@ -48,8 +48,8 @@ void AM2901A::CPU::Execute(PINS *pins) {
 
     SetPINS(pins);
 
-    RegA = Register[Pins->A];
-    RegB = Register[Pins->B];
+    RegA = RAM[Pins->A];
+    RegB = RAM[Pins->B];
     // SOURCE DECODER and SOURCE SELECT;
     BYTE I20 = Pins->I20;
 
@@ -64,7 +64,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
     switch (I20) {
         case AQ: {
             HWORD.R = RegA;
-            HWORD.S = Q;
+            HWORD.S = RegQ;
         }
             break;
         case AB: {
@@ -74,7 +74,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
         case ZQ: {
             HWORD.R = 0;
-            HWORD.S = Q;
+            HWORD.S = RegQ;
         }
             break;
         case ZB: {
@@ -94,7 +94,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
         case DQ: {
             HWORD.R = Pins->D;
-            HWORD.S = Q;
+            HWORD.S = RegQ;
         }
             break;
         case DZ: {
@@ -151,7 +151,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
     BYTE I86 = Pins->I86;
     switch (I86) {
         case QREG: {
-            Q = HWORD.FUNC;
+            RegQ = HWORD.FUNC;
             Pins->Y = HWORD.FUNC;
         }
             break;
@@ -160,23 +160,23 @@ void AM2901A::CPU::Execute(PINS *pins) {
         }
             break;
         case RAMA: {
-            Register[Pins->B] = HWORD.FUNC;
-            Pins->Y = Register[Pins->A];
+            RAM[Pins->B] = HWORD.FUNC;
+            Pins->Y = RAM[Pins->A];
         }
             break;
         case RAMF: {
-            Register[Pins->B] = HWORD.FUNC;
-            Pins->Y = Pins->A;
+            RAM[Pins->B] = HWORD.FUNC;
+            Pins->Y = RAM[Pins->A];
         }
             break;
         case RAMQD: {
             Pins->RAM0 = HWORD.FUNC & 0b0001;
             Pins->RAM3 = 0; // SHOULD BE OUT Pins->RAM3 = Input Pins->RAM3, but we have single cpu
-            Register[Pins->B] = HWORD.FUNC >> 1;
+            RAM[Pins->B] = HWORD.FUNC >> 1;
 
-            Pins->Q0 = Q & 0b0001;
+            Pins->Q0 = RegQ & 0b0001;
             Pins->Q3 = 0;   // same for Q3
-            Q = Q >> 1;
+            RegQ = RegQ >> 1;
 
             Pins->Y = HWORD.FUNC;
         }
@@ -185,8 +185,8 @@ void AM2901A::CPU::Execute(PINS *pins) {
             Pins->RAM0 = HWORD.FUNC & 0b0001;
             Pins->RAM3 = 0;
 
-            Pins->Q0 = Q & 0b0001;
-            Register[Pins->B] = HWORD.FUNC >> 1;
+            Pins->Q0 = RegQ & 0b0001;
+            RAM[Pins->B] = HWORD.FUNC >> 1;
 
             Pins->Y = HWORD.FUNC;
         }
@@ -194,11 +194,11 @@ void AM2901A::CPU::Execute(PINS *pins) {
         case RAMQU: {
             Pins->RAM0 = 0;
             Pins->RAM3 = HWORD.FUNC & 0b1000;
-            Register[Pins->B] = HWORD.FUNC << 1;
+            RAM[Pins->B] = HWORD.FUNC << 1;
 
             Pins->Q0 = 0;
-            Pins->Q3 = Q & 0b1000;
-            Q = Q << 1;
+            Pins->Q3 = RegQ & 0b1000;
+            RegQ = RegQ << 1;
 
             Pins->Y = HWORD.FUNC;
         }
@@ -207,8 +207,8 @@ void AM2901A::CPU::Execute(PINS *pins) {
             Pins->RAM0 = 0;
             Pins->RAM3 = HWORD.FUNC & 0b1000;
 
-            Pins->Q3 = Q & 0b1000;
-            Register[Pins->B] = HWORD.FUNC << 1;
+            Pins->Q3 = RegQ & 0b1000;
+            RAM[Pins->B] = HWORD.FUNC << 1;
 
             Pins->Y = HWORD.FUNC;
         }

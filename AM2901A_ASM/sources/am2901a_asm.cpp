@@ -1,6 +1,6 @@
 #include <am2901a_asm.hpp>
 
-AM2901A_ASM::AM2901A_ASM::AM2901A_ASM() : lineNumber(0) {
+AM2901A_ASM::AM2901A_ASM::AM2901A_ASM() : lineNumber(0), commandNumber(0) {
     cpu.Initialize();
 }
 
@@ -14,28 +14,28 @@ void AM2901A_ASM::AM2901A_ASM::preproccessLine(std::string &line) const {
         commaCount++;
     }
     if (commaCount != 3) {
-        throw std::logic_error("Invalid syntax (wrong A,B,D,C0 syntax) in line" + std::to_string(lineNumber));
+        throw std::logic_error("Invalid syntax (wrong A,B,D,C0 syntax) in line " + std::to_string(lineNumber));
     }
 
     if (line.find('(') != std::string::npos) {
         line.replace(line.find('('),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing '(') in line" + std::to_string(lineNumber));
+        throw std::logic_error("Invalid syntax (Missing '(') in line " + std::to_string(lineNumber));
     }
 
     if (line.find(')') != std::string::npos) {
         line.replace(line.find(')'),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing ')') in line" + std::to_string(lineNumber));
+        throw std::logic_error("Invalid syntax (Missing ')') in line " + std::to_string(lineNumber));
     }
 
     if (line.find('=') != std::string::npos) {
         line.replace(line.find('='),1,1,' ');
     }
     else {
-        throw std::logic_error("Invalid syntax (Missing '=') in line" + std::to_string(lineNumber));
+        throw std::logic_error("Invalid syntax (Missing '=') in line " + std::to_string(lineNumber));
     }
 }
 
@@ -59,54 +59,56 @@ AM2901A_ASM::COMMAND AM2901A_ASM::AM2901A_ASM::parseCommand(std::string &line) {
 
     ss >> cmd.operation;
     if (!valid_operations.contains(cmd.operation)) {
-        throw std::logic_error("invalid operation/command in line + std::to_string(lineNumber)");
+        throw std::logic_error("invalid operation/command in line "+ std::to_string(lineNumber));
     }
 
     ss >> cmd.operands;
     if (!valid_operands.contains(cmd.operands))
-        throw std::logic_error("invalid operands in line + std::to_string(lineNumber)");
+        throw std::logic_error("invalid operands in line " + std::to_string(lineNumber));
 
     ss >> cmd.destination;
     if (!valid_destination.contains(cmd.destination))
-        throw std::logic_error("invalid destination in line + std::to_string(lineNumber)");
+        throw std::logic_error("invalid destination in line " + std::to_string(lineNumber));
 
     int16_t A,B,D,C0;
 
     if (ss >> A) {
         if (A > 15 or A < -7)
-            throw std::logic_error("4 bit overflow (A) in line + std::to_string(lineNumber)");
+            throw std::logic_error("4 bit overflow (A) in line "+ std::to_string(lineNumber));
     }
     else {
-        throw std::logic_error("Invalid address (A) in line + std::to_string(lineNumber)");
+        throw std::logic_error("Invalid address (A) in line " + std::to_string(lineNumber));
     }
 
     if (ss >> B) {
         if (B > 15 or B < -7)
-            throw std::logic_error("4 bit overflow (B) in line + std::to_string(lineNumber)");
+            throw std::logic_error("4 bit overflow (B) in line " + std::to_string(lineNumber));
     }
     else {
-        throw std::logic_error("Invalid address (B) in line + std::to_string(lineNumber)");
+        throw std::logic_error("Invalid address (B) in line " + std::to_string(lineNumber));
     }
 
     if (ss >> D) {
         if (D > 15 or D < -7)
-            throw std::logic_error("4 bit overflow (D) in line + std::to_string(lineNumber)");
+            throw std::logic_error("4 bit overflow (D) in line " + std::to_string(lineNumber));
     }
     else {
-        throw std::logic_error("Invalid Data (D) in line + std::to_string(lineNumber)");
+        throw std::logic_error("Invalid Data (D) in line " + std::to_string(lineNumber));
     }
     if (ss >> C0) {
         if (C0 > 1 or C0 < 0)
-            throw std::logic_error("1 bit overflow (C0) in line + std::to_string(lineNumber)");
+            throw std::logic_error("1 bit overflow (C0) in line " + std::to_string(lineNumber));
     }
     else {
-        throw std::logic_error("Invalid or missing carry-in (C0) in line + std::to_string(lineNumber)");
+        throw std::logic_error("Invalid or missing carry-in (C0) in line " + std::to_string(lineNumber));
     }
 
     cmd.A = A & 0b1111;
     cmd.B = B & 0b1111;
     cmd.D = D & 0b1111;
     cmd.C0 = C0 & 0b1;
+
+    commandNumber++;
 
     return cmd;
 }
@@ -159,10 +161,10 @@ void AM2901A_ASM::AM2901A_ASM::compile() {
     for (const auto& cmd : commands) {
         if (cmd.operation != "REGS") {
             bus.push_back(setPINS(cmd));
-            internalCommandsQ.push(lineNumber);
         }
         else {
             bus.push_back({});
+            internalCommandsQ.push(commandNumber);
         }
     }
 }
@@ -176,7 +178,7 @@ void AM2901A_ASM::AM2901A_ASM::executeCommand(AM2901A::PINS& p) {
 
 void AM2901A_ASM::AM2901A_ASM::printRegisters() {
     for (size_t i = 0; i < 16; i++) {
-        std::cout << "R" << i << " = " << std::bitset<4> (cpu.Register[i]) << std::endl;
+        std::cout << "R" << i << " = " << std::bitset<4> (cpu.RAM[i]) << std::endl;
     }
 }
 
@@ -185,9 +187,14 @@ void AM2901A_ASM::AM2901A_ASM::run(const std::string& file) {
     parse(file);
     compile();
     for (size_t i = 0; i < std::size(bus); i++) {
-        if (i == internalCommandsQ.front()) {
-            printRegisters();
-            internalCommandsQ.pop();
+        if (!internalCommandsQ.empty()) {
+            if (i == internalCommandsQ.front()) {
+                printRegisters();
+                internalCommandsQ.pop();
+            }
+            else {
+                executeCommand(bus[i]);
+            }
         }
         else {
             executeCommand(bus[i]);

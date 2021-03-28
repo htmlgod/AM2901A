@@ -35,6 +35,7 @@ struct AM2901A_ASM::AM2901A_ASM {
     std::vector<AM2901A::PINS> bus;
 
     size_t lineNumber{};
+    size_t commandNumber{};
 
     AM2901A_ASM();
 

@@ -21,9 +21,9 @@ struct AM2901A::PINS {
     BYTE Z: 1;                     // F == 0 flag
     BYTE I20: 3;                   // I0 I1 I2 instructions input
     [[maybe_unused]] BYTE CP: 1;   // Clock input (can be always 1 because lathes after RAM prevents from data lose
-    [[maybe_unused]] BYTE Q3: 1;   // MSB after Q register shift << | i/o
+    [[maybe_unused]] BYTE Q3: 1;   // MSB after RegQ register shift << | i/o
     BYTE B: 4;                     // B0...B3 address input
-    [[maybe_unused]] BYTE Q0: 1;                    // LSB after Q register shift >> | i/o
+    [[maybe_unused]] BYTE Q0: 1;                    // LSB after RegQ register shift >> | i/o
     BYTE D: 4;                     // D3...D0 data input
     BYTE I53: 3;                   // I3 I5 I4 instructions input
     BYTE C0: 1;                    // Carry-in to ALU
@@ -57,10 +57,10 @@ struct AM2901A::CPU {
     void SetPINS(PINS *pins);
     void Execute(PINS *pins);
 
-    BYTE Q: 4{};             // Q register
-    BYTE RegA: 4{};          // Internal Register for value from RAM by A address
-    BYTE RegB: 4{};          // Internal Register for value from RAM by B address
-    BYTE Register[0xF]{};     // Internal RAM of 16 registers
+    BYTE RegQ: 4{};          // RegQ register
+    BYTE RegA: 4{};          // Internal RAM for value from RAM by A address
+    BYTE RegB: 4{};          // Internal RAM for value from RAM by B address
+    BYTE RAM[0xF]{};         // Internal RAM of 16 registers
     PINS *Pins = nullptr;    // Current PINS setting
 
     // NEEDED TO COMPUTE OVR AND C4 FLAGS
