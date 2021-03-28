@@ -145,9 +145,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
     }
 
-    // ALU DESTINATION CONTROL
-    // REGISTER SHIFT
-
+    // ALU DESTINATION CONTROL AND REGISTERS SHIFT
     BYTE I86 = Pins->I86;
     switch (I86) {
         case QREG: {
@@ -166,7 +164,7 @@ void AM2901A::CPU::Execute(PINS *pins) {
             break;
         case RAMF: {
             RAM[Pins->B] = HWORD.FUNC;
-            Pins->Y = RAM[Pins->A];
+            Pins->Y = HWORD.FUNC;
         }
             break;
         case RAMQD: {

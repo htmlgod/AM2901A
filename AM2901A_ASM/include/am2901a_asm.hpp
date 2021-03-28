@@ -118,4 +118,3 @@ struct AM2901A_ASM::AM2901A_ASM {
             {"RAMU" , 07}
     };
 };
-
