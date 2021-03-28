@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+#include <bitset>
 #include <exception>
 #include <iostream>
 #include <fstream>
@@ -6,6 +8,7 @@
 #include <set>
 #include <string>
 #include <sstream>
+#include <queue>
 #include <vector>
 
 #include <am2901a.hpp>
@@ -22,15 +25,37 @@ struct AM2901A_ASM::COMMAND {
     BYTE B : 4;
     BYTE D : 4;
     std::string destination;
+    BYTE C0 : 1;
 };
 
 struct AM2901A_ASM::AM2901A_ASM {
     AM2901A::CPU cpu {};
-    AM2901A::PINS pins {};
 
     std::vector<COMMAND> commands;
     std::vector<AM2901A::PINS> bus;
 
+    size_t lineNumber{};
+
+    AM2901A_ASM();
+
+    void preproccessLine(std::string& line) const;
+    static bool isCommentary(const std::string& line);
+
+    std::queue<size_t> internalCommandsQ;
+    static bool isInternalCommand(const std::string& line);
+
+    [[nodiscard]] COMMAND parseCommand(std::string& line);
+    void parse(const std::string& fileName);
+
+    AM2901A::PINS setPINS(const COMMAND& cmd);
+    void compile();
+
+    void executeCommand(AM2901A::PINS& p);
+
+    void run(const std::string& fileName);
+    void interpret(std::string& cmd);
+
+    void printRegisters();
     std::set<std::string> valid_operations = {
         "ADD",
         "SUBR",
@@ -61,7 +86,7 @@ struct AM2901A_ASM::AM2901A_ASM {
         "RAMQU",
         "RAMU"
     };
-    std::map<std::string, BYTE> operation_octal_codes = {
+    const std::map<std::string, BYTE> operation_octal_codes = {
             {"ADD" , 00},
             {"SUBR" , 01},
             {"SUBS" , 02},
@@ -71,7 +96,7 @@ struct AM2901A_ASM::AM2901A_ASM {
             {"EXOR" , 06},
             {"EXNOR" , 07}
     };
-    std::map<std::string, BYTE> operands_octal_codes = {
+    const std::map<std::string, BYTE> operands_octal_codes = {
             {"AQ" , 00},
             {"AB" , 01},
             {"ZQ" , 02},
@@ -81,7 +106,7 @@ struct AM2901A_ASM::AM2901A_ASM {
             {"DQ" , 06},
             {"DZ" , 07}
     };
-    std::map<std::string, BYTE> destination_octal_codes = {
+    const std::map<std::string, BYTE> destination_octal_codes = {
             {"QREG" , 00},
             {"NOP" , 01},
             {"RAMA" , 02},
@@ -91,20 +116,5 @@ struct AM2901A_ASM::AM2901A_ASM {
             {"RAMQU" , 06},
             {"RAMU" , 07}
     };
-    AM2901A_ASM();
-
-    [[nodiscard]] COMMAND parseCommand(std::string& line) const;
-    bool parse(const std::string& fileName);
-
-    static AM2901A::PINS setPINS(const COMMAND& cmd);
-    void executeCommand(AM2901A::PINS& p);
-
-    void compile();
-    void run(std::string& fileName);
-
-    //void printRegisters();
-    //void printState();
-
-
 };
 
