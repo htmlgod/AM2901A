@@ -10,14 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/AM2901A)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/AM2901A_ASM)
 
-add_subdirectory(third-party/gtest)
 
 if (BUILD_TESTING)
+	add_subdirectory(third-party/gtest)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif()
 
 install(TARGETS asm_am2901a DESTINATION bin)
-install(TARGETS am2901a_asm am2901a DESTINATION lib)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG.md DESTINATION .)
 
 include(CPackConfig.cmake)
