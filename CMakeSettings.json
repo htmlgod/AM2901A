@@ -9,7 +9,7 @@
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "cmakeCommandArgs": "-DBUILD_TESTS=ON"
+      "cmakeCommandArgs": "-DBUILD_TESTING=ON"
     }
   ]
 }
