@@ -1,39 +1,15 @@
 language: cpp
 
-compiler:
-  -gcc
 
-before_install:
-  - pip install --user cpp-coveralls
-  - eval "${MATRIX_EVAL}"
-  - sudo apt-get update
-  - sudo apt-get -y install libxml2-dev
-  - sudo apt-get -y remove cmake
-  
-
-cache: cargo
-
-dist : Bionic
-
-install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-10" CC="gcc-10"; fi
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports
+    packages:
+      - cmake
+      - cmake-data
 
 script:
-  - ctest -V
-  - gtest
-  
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-10
-      env:
-        - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+  - cmake -H. -B_build -DBUILD_TESTING=ON
+  - cmake --build _build --target asm_test
+  - cd _build && ctest

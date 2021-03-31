@@ -33,6 +33,3 @@ TEST_F(AM2901A_ASM_TEST, comment_parse_3) {
     std::string line = "#    123123 AD        FASda gsdDASdas     QE2313comment";
     ASSERT_TRUE(AM2901A_ASM::AM2901A_ASM::isCommentary(line));
 }
-TEST_F(AM2901A_ASM_TEST, work_with_registers) {
-    EXPECT_ANY_THROW(ASM.parseCommand("#adasd"));
-}
